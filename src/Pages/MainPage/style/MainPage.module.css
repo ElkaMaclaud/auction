@@ -1,0 +1,23 @@
+.wrapperPage {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+    min-height: 100vh;
+}
+
+.header {
+    margin-top: 27px;
+    height: 43px;
+    min-height: 43px;
+}
+
+.content {
+    max-width: 100%;
+    flex-grow: 1;
+}
+
+.footer {
+    height: 182px;
+    min-height: 182px;
+}

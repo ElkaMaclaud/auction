@@ -1,0 +1,13 @@
+.wrapper {
+    min-height: 100vh;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.form {
+    height: calc(100vh - 182px);
+}
+.footer {
+    height: 182px;
+    max-height: 182px;
+}
