@@ -17,11 +17,12 @@ const actionCreators: ActionCreators = {
 };
 
 const RegistrationForm: FC<{ action: string }> = ({ action }) => {
-  const { success, user, transition } = useAppSelector(state=> state.page);
+  const { success, user, transition } = useAppSelector(state => state.page);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: user.email,
+    organizer: false,
     password: user.password,
   });
   const handleClick = (event: any) => {
@@ -66,6 +67,13 @@ const RegistrationForm: FC<{ action: string }> = ({ action }) => {
           type="password"
           placeholder="Введите пароль..."
         />
+        {action === "REGISTR_USER" && <label>
+          <input type="checkbox" checked={formData.organizer} onChange={(e) => setFormData((user) => ({
+              ...user,
+              organizer: e.target.checked,
+            }))} />
+            <span>Зарегистрироваться как организатор</span>
+        </label>}
         <button
           type="submit"
           className={classes.registration__btn}

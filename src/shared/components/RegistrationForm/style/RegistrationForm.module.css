@@ -1,3 +1,6 @@
+* {
+    box-sizing: border-box;
+}
 .registration {
     width: 100%;
     display: flex;
@@ -5,14 +8,35 @@
     gap: 14px;
     align-items: center;
 }
-
+form {
+    width: 100%;
+    max-width: 100%;
+}
 input {
     width: 100%;
+    max-width: 100%;
     border: 1px solid #ccc;
     border-radius: 4px;
     outline: none;
     padding: 10px;
     background-color: #fff;
+}
+input[type="checkbox"] {
+    width: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    padding: 10px;
+    margin: 0;
+}
+label {
+    width: 100%;
+    display: flex;
+    justify-content: left;
+    gap: 20px;
+}
+span {
+    color: #333;
 }
 
 button {

@@ -1,14 +1,16 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 type IAuthorization = {
-    name?: string;
     email: string;
-    role?: string;
+    role: "organizer" | "user";
     password: string;
 };
 
 
-export type ResponseType = { success: boolean; message: string };
+export interface ResponseType extends IAuthorization {
+   success: boolean; 
+   message: string 
+};
 
 export interface IInitialState {
     transition: boolean;
@@ -71,13 +73,13 @@ async function fetchDataWithRetry<T>(
 }
 export const REGISTR_USER = createAsyncThunk<
     ResponseType,
-    IAuthorization,
+    IAuthorization & {organizer: boolean},
     {
         rejectValue: string;
     }
->("page/REGISTR_USER", async ({ email, password }, { rejectWithValue }) => {
+>("page/REGISTR_USER", async ({ email, organizer, password }, { rejectWithValue }) => {
     const url =
-        "http://localhost:3000/api/auth/register";
+        "http://localhost:5000/api/auth/register";
 
     const option: RequestInit = {
         method: "POST",
@@ -86,6 +88,7 @@ export const REGISTR_USER = createAsyncThunk<
         },
         body: JSON.stringify({
             email,
+            role: organizer ? "organizer" : "user",
             password,
         }),
     };
@@ -107,7 +110,7 @@ export const AUTH_USER = createAsyncThunk<
         rejectValue: string;
     }
 >("page/AUTH_USER", async ({ email, password }, { rejectWithValue }) => {
-    const url = "http://localhost:3000/api/auth/login";
+    const url = "http://localhost:5000/api/auth/login";
     const option: RequestInit = {
         method: "POST",
         headers: {
@@ -172,8 +175,12 @@ const slice = createSlice({
                 ...state,
                 success: true,
                 token: action.payload.access_token,
-                // role: 
-                message: "Success",
+                user: {
+                    ...state.user,
+                    email: action.payload.email,
+                    role: action.payload.role
+                },
+                message: "success",
                 page: "COMPLICATED",
             };
         });

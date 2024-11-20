@@ -16,7 +16,7 @@ const PrivateRoute: FC<{ children: ReactNode }> = ({
                 currentPath === "/") &&
             page === "COMPLICATED"
         ) {
-            navigate("auction", { replace: true });
+            navigate("/auction", { replace: true });
         }
     }, [page, navigate]);
 

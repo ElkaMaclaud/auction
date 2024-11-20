@@ -25,7 +25,7 @@ function App() {
         <Routes>
           <Route path={"/auction"} element={<MainPage />}>
             <Route
-              path="auction"
+              path="/auction"
               element={<Auction />}
             />
           </Route>
