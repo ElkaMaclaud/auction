@@ -52,3 +52,14 @@ tr:nth-child(odd) {
   border: 1px solid #f5c6cb;
   border-radius: 4px;
 }
+.organizer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  justify-content: right;
+}
+.organizer button {
+  align-self: flex-end;
+  width: 200px;
+}

@@ -25,6 +25,7 @@ const Auction: FC = () => {
   const socketRef = useRef<Socket | null>(null);
   const [participants, setParticipants] = useState<IParticipant[]>([]);
   const [timer, setTimer] = useState(30)
+  const [auctionActive, setAuctionActive] = useState(false);
 
   useEffect(() => {
     socketRef.current = io('http://localhost:5000', {
@@ -74,6 +75,7 @@ const Auction: FC = () => {
 
   const startAuction = () => {
     if (socketRef.current) {
+      setAuctionActive(true)
       socketRef.current.emit('start auction', Math.random().toString(36).substring(2, 15));
     }
   };
@@ -123,9 +125,8 @@ const Auction: FC = () => {
       </table>
       {user.role === "organizer" && (
         <div className="organizer">
-          <h2>Организатор торгов</h2>
-          <button onClick={startAuction}>Начать торги</button>
-          <button onClick={endAuction}>Завершить торги</button>
+          <button disabled={auctionActive} onClick={startAuction}>Начать торги</button>
+          <button disabled={!auctionActive} onClick={endAuction}>Завершить торги</button>
         </div>
       )}
     </div>
