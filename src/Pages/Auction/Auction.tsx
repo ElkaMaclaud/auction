@@ -1,4 +1,4 @@
-import React, { useState, useEffect, FC } from 'react';
+import React, { useState, useEffect, FC, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import './Auction.css';
 import { useAppSelector } from '../../store/reduxHooks';
@@ -12,89 +12,98 @@ const parameters = [
   "Итоговая стоимость, руб."
 ];
 
-const Organizer: FC<{ socket: Socket }> = ({ socket }) => {
-
-  const startAuction = () => {
-    socket.emit('start auction', Math.random().toString(36).substring(2, 15));
-  };
-
-  const endAuction = () => {
-    socket.emit('end auction');
-  };
-
-  return (
-    <div className="organizer">
-      <h2>Организатор торгов</h2>
-      <button onClick={startAuction}>Начать торги</button>
-      <button onClick={endAuction}>Завершить торги</button>
-    </div>
-  );
-};
+interface IParticipant {
+  socket: string,
+  email: string,
+  active: boolean,
+  currentBid: 0,
+  turnEndTime: string
+}
 
 const Auction: FC = () => {
   const { user, token } = useAppSelector(state => state.page);
-  const [timeLeft, setTimeLeft] = useState<number>(30);
-  const [auctionActive, setAuctionActive] = useState<boolean>(false);
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [participants, setParticipants] = useState<{socket: string, email: string}[]>([]);
-  const [auction, setAuction] = useState(false)
+  const socketRef = useRef<Socket | null>(null);
+  const [participants, setParticipants] = useState<IParticipant[]>([]);
+  const [timer, setTimer] = useState(30)
 
   useEffect(() => {
-    const newSocket = io('http://localhost:5000', {
+    socketRef.current = io('http://localhost:5000', {
       transports: ['polling', 'websocket'],
       withCredentials: true,
       extraHeaders: {
         Authorization: `Bearer ${token}`
       },
     });
-    setSocket(newSocket);
-    newSocket.on('connect', () => {
-
+    socketRef.current.on("connect_error", (err) => {
+      console.log("Ошибка подключения к сокету:", err);
     });
-    newSocket.on('auction started', (auctionId, participants) => {
-      newSocket.emit('join auction', auctionId);
-      setAuctionActive(true);
-      setTimeLeft(30);
-    });
+    const socket = socketRef.current;
 
-    newSocket.on('auction ended', () => {
-      setAuctionActive(false);
-      setTimeLeft(0);
+    socket.on('connect', () => {
+      console.log("Вы подключились к торгам!");
     });
 
-    newSocket.on('participants updated', (participants: {socket: string, email: string}[]) => {
-      console.log('Updated participants:', participants);
+    socket.on('auction started', (auctionId, participants) => {
+      socket.emit('join auction', auctionId);
+    });
+
+    socket.on('auction ended', () => {
+
+    });
+
+    socket.on("place bid", () => {
+
+
+    });
+
+    socket.on("your turn", (data) => {
+
+    });
+
+    socket.on('participants updated', (data: { participants: IParticipant[], remainingTime: number }) => {
+      const { participants, remainingTime } = data
+      console.log('Updated participants:', participants, remainingTime !== undefined ? remainingTime : "");
       setParticipants(participants)
+      if (remainingTime !== undefined) setTimer(remainingTime)
     });
 
     return () => {
-      newSocket.disconnect();
+      socket.disconnect();
     };
   }, [token]);
 
-  useEffect(() => {
-    if (auctionActive) {
-      const timer = setInterval(() => {
-        setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
-      }, 1000);
-
-      return () => clearInterval(timer);
+  const startAuction = () => {
+    if (socketRef.current) {
+      socketRef.current.emit('start auction', Math.random().toString(36).substring(2, 15));
     }
-  }, [auctionActive]);
+  };
+
+  const endAuction = () => {
+    if (socketRef.current) {
+      socketRef.current.emit('end auction');
+    }
+  };
 
   return (
     <div className="auction-room">
       <h2>Ход торгов: Тестовые торги на аппарат ЛОТОС №2033554 ({new Date().toLocaleString()})</h2>
       <p>Уважаемые участники, во время вашего хода вы можете изменить параметры торгов, указанные в таблице:</p>
-      <div className="timer" style={{ width: "300px" }}>
+      {/* <div className="timer" style={{ width: "300px", marginBottom: "10px" }}>
         <span>Оставшееся время: {timeLeft} секунд</span>
-      </div>
+      </div> */}
       <table>
         <thead>
           <tr>
             <th>Параметры и требования</th>
             {participants.map((participant, index) => (
-              <th key={index}>Участник<br/>{participant.email}</th>
+              <th key={index}>
+                {participant.active && (
+                  <div className="timer" style={{ width: "100%", marginTop: "-100px" }}>
+                    <span>00:00:{timer.toString().padStart(2, "0")}</span>
+                  </div>
+                )}
+                <div style={{ marginTop: "70px" }}>Участник<br />{participant.email}</div>
+              </th>
             ))}
           </tr>
         </thead>
@@ -112,7 +121,13 @@ const Auction: FC = () => {
           ))}
         </tbody>
       </table>
-      {user.role === "organizer" && <Organizer socket={socket!} />}
+      {user.role === "organizer" && (
+        <div className="organizer">
+          <h2>Организатор торгов</h2>
+          <button onClick={startAuction}>Начать торги</button>
+          <button onClick={endAuction}>Завершить торги</button>
+        </div>
+      )}
     </div>
   );
 };
