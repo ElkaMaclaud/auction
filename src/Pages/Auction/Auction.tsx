@@ -1,22 +1,21 @@
-import React, { useState, useEffect, FC, useRef } from 'react';
+import React, { useState, useEffect, FC, useRef, ChangeEvent, KeyboardEvent, FocusEvent } from 'react';
 import { io, Socket } from 'socket.io-client';
 import './Auction.css';
 import { useAppSelector } from '../../store/reduxHooks';
 
-const parameters = [
-  "Начальная стоимость лота, руб.",
-  "Срок изготовления лота, дней",
-  "Гарантийные обязательства, мес",
-  "Условия оплаты",
-  "Снижение стоимости лота, руб. (без НДС)",
-  "Итоговая стоимость, руб."
-];
+const parameters: Map<string, string | number> = new Map([
+  ["availability", "Наличие комплекса мероприятий"],
+  ["term", "Срок изготовления лота, дней"],
+  ["warrantyObligations", "Гарантийные обязательства, мес"],
+  ["paymentTerms", "Условия оплаты"],
+  ["currentBid", "Итоговая стоимость, руб."]
+]);
 
 interface IParticipant {
   socket: string,
   email: string,
   active: boolean,
-  currentBid: 0,
+  currentBid: number,
   turnEndTime: string
 }
 
@@ -25,7 +24,8 @@ const Auction: FC = () => {
   const socketRef = useRef<Socket | null>(null);
   const [participants, setParticipants] = useState<IParticipant[]>([]);
   const [timer, setTimer] = useState(30)
-  const [auctionActive, setAuctionActive] = useState(false);
+  const [auctionId, setAuctionId] = useState("");
+  const [value, setValue] = useState("")
 
   useEffect(() => {
     socketRef.current = io('http://localhost:5000', {
@@ -44,21 +44,17 @@ const Auction: FC = () => {
       console.log("Вы подключились к торгам!");
     });
 
-    socket.on('auction started', (auctionId, participants) => {
-      socket.emit('join auction', auctionId);
+    socket.on('auction started', (id, participants) => {
+      socket.emit('join auction', id);
+      setAuctionId(id)
     });
 
     socket.on('auction ended', () => {
-
-    });
-
-    socket.on("place bid", () => {
-
-
+      setAuctionId("")
     });
 
     socket.on("your turn", (data) => {
-
+      setValue(data.participant.currentBid)
     });
 
     socket.on('participants updated', (data: { participants: IParticipant[], remainingTime: number }) => {
@@ -75,21 +71,49 @@ const Auction: FC = () => {
 
   const startAuction = () => {
     if (socketRef.current) {
-      setAuctionActive(true)
-      socketRef.current.emit('start auction', Math.random().toString(36).substring(2, 15));
+      const id = Math.random().toString(36).substring(2, 15)
+      setAuctionId(id)
+      socketRef.current.emit('start auction', id);
+    }
+  };
+  const passTurnToNextParticipant = () => {
+    if (socketRef.current) {
+      socketRef.current.emit('turn timeout', participants.find(i => i.active), auctionId);
+    }
+  };
+
+  const placeBid = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      if (socketRef.current) {
+        socketRef.current.emit('place bid', parseInt(value), auctionId, participants.find(i => i.active));
+      }
     }
   };
 
   const endAuction = () => {
     if (socketRef.current) {
-      socketRef.current.emit('end auction');
+      socketRef.current.emit('end auction', auctionId);
+    }
+  };
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value
+    value = value.replace(/\D/g, "")
+    e.target.value = value
+    setValue(e.target.value)
+  }
+
+  const handleFocus = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value === "0") {
+      e.target.value = "";
+      setValue("")
     }
   };
 
   return (
     <div className="auction-room">
-      <h2>Ход торгов: Тестовые торги на аппарат ЛОТОС №2033554 ({new Date().toLocaleString()})</h2>
-      <p>Уважаемые участники, во время вашего хода вы можете изменить параметры торгов, указанные в таблице:</p>
+      {auctionId === "" ? <><h2>Скоро начнём торги</h2></> : <><h2>Ход торгов: Тестовые торги на аппарат ЛОТОС №2033554 ({new Date().toLocaleString()})</h2>
+        <p>Уважаемые участники, во время вашего хода вы можете изменить параметры торгов, указанные в таблице:</p></>}
       {/* <div className="timer" style={{ width: "300px", marginBottom: "10px" }}>
         <span>Оставшееся время: {timeLeft} секунд</span>
       </div> */}
@@ -99,37 +123,51 @@ const Auction: FC = () => {
             <th>Параметры и требования</th>
             {participants.map((participant, index) => (
               <th key={index}>
-                {participant.active && (
+                {participant.active && auctionId && (
                   <div className="timer" style={{ width: "100%", marginTop: "-100px" }}>
                     <span>00:00:{timer.toString().padStart(2, "0")}</span>
                   </div>
                 )}
-                <div style={{ marginTop: "70px" }}>Участник<br />{participant.email}</div>
+                <div style={participant.active ? { marginTop: "70px" } : { marginTop: "0" }}>Участник<br />{participant.email}</div>
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {parameters.map((param, index) => (
+          {Array.from(parameters).map(([key, val], index) => (
             <tr key={index}>
-              <td>{param}</td>
+              <td>{val}</td>
               {participants.map((participant, participantIndex) => (
                 <td key={participantIndex}>
-                  {participant.email}
-                  {participant.socket}
+                  {key === "currentBid" && participant.active && user.email === participant.email ?
+                    <input type="text" value={value}
+                      onFocus={handleFocus}
+                      onChange={handleChange}
+                      onKeyDown={placeBid}
+                    /> :
+                    <span>{participant[key as keyof IParticipant]}</span>}
                 </td>
               ))}
             </tr>
           ))}
         </tbody>
       </table>
-      {user.role === "organizer" && (
-        <div className="organizer">
-          <button disabled={auctionActive} onClick={startAuction}>Начать торги</button>
-          <button disabled={!auctionActive} onClick={endAuction}>Завершить торги</button>
-        </div>
-      )}
-    </div>
+      {
+        user.role === "user" && participants.find(i => i.active && i.email === user.email) && (
+          <div>
+            <button onClick={passTurnToNextParticipant}>Передать ход</button>
+          </div>
+        )
+      }
+      {
+        user.role === "organizer" && (
+          <div className="organizer">
+            <button disabled={auctionId.length > 0} onClick={startAuction}>Начать торги</button>
+            <button disabled={auctionId.length === 0} onClick={endAuction}>Завершить торги</button>
+          </div>
+        )
+      }
+    </div >
   );
 };
 
