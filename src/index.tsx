@@ -1,19 +1,18 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import { Provider } from "react-redux";
-import store from "./store/Store";
 import { BrowserRouter } from "react-router-dom";
+import { SocketProvider } from './socketContext';
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 root.render(
-  <Provider store={store}>
-    <BrowserRouter future={{ v7_startTransition: true }}>
+  <BrowserRouter future={{ v7_startTransition: true }}>
+    <SocketProvider>
       <App />
-    </BrowserRouter>
-  </Provider>
+    </SocketProvider>
+  </BrowserRouter>
 );
 
 // If you want to start measuring performance in your app, pass a function

@@ -1,0 +1,16 @@
+.buttonWrapper {
+    width: 100%;
+    text-align: right;
+  }
+  
+  .buttonWrapper button {
+    padding: 10px;
+    width: 30%;
+    border: none;
+    background-color: #76d79b;
+    border-radius: 8px;
+    transition: .3s ease;
+  }
+  .buttonWrapper button:hover {
+    background-color: #5bba7f;
+  }
