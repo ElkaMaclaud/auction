@@ -45,7 +45,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       role: queryParams.get("role") || "user",
       nameCompany: queryParams.get("nameCompany") || ""
     })
-    const link: string = `http://localhost:5000${location.search}`; 
+    const link: string = `${process.env.REACT_APP_API_URL}${location.search}`; 
 
     socketRef.current = io(link, {
       transports: ['polling', 'websocket'],
