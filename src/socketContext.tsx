@@ -16,7 +16,8 @@ interface SocketContextProps {
   passTurnToNextParticipant: () => void;
   visibleModal: boolean,
   setVisibleModal: Dispatch<React.SetStateAction<boolean>>;
-  addCompanyName: (list: string) => void
+  addCompanyName: (list: string) => void;
+  waitingConnection: boolean
 }
 export interface IParticipant {
   socket: string,
@@ -38,6 +39,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const location = useLocation();
   const [user, setUser] = useState({ role: "", nameCompany: "" })
   const [visibleModal, setVisibleModal] = useState(false)
+  const [waitingConnection, setWaitingConnection] = useState(true)
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -59,6 +61,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const socket = socketRef.current;
 
     socket.on('connect', () => {
+      setWaitingConnection(false)
       console.log("Вы подключились к торгам!");
     });
 
@@ -139,7 +142,8 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       passTurnToNextParticipant,
       visibleModal,
       setVisibleModal,
-      addCompanyName
+      addCompanyName,
+      waitingConnection
     }}>
       {children}
     </SocketContext.Provider>
