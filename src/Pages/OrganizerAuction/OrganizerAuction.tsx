@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import style from "./style/OrganizerAuction.module.css"
 
 const OrganizerAuction = () => {
-    const { auctionId, participants, actionValue, timer, endAuction } = useSocket();
+    const { auctionId, endAuction } = useSocket();
     return (
         <div className={style.wrapper}>
             <Table />

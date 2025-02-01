@@ -49,7 +49,7 @@ const Organizer = () => {
           </label>
         </div>
         <div className={style.organizerAction}>
-          {!participants.length && <span>Не получится начать торги пока не подключится хотя бы один участник</span>}
+          {!participants.length && auctionId.length === 0 && <span>Не получится начать торги пока не подключится хотя бы один участник</span>}
           <button disabled={auctionId.length > 0 || !participants.length} onClick={startAuction}>Начать торги</button>
           <button disabled={auctionId.length === 0} onClick={endAuction}>Завершить торги</button>
           <button><Link className={style.link} to="/orginazerAuction">{auctionId ? "Текущие торги" : "Предстоящие торги"}</Link></button>
