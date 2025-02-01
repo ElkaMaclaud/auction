@@ -5,12 +5,12 @@ import style from "./style/Auction.module.css"
 
 
 const Auction: FC = () => {
-  const { participants, user, passTurnToNextParticipant } = useSocket();
+  const { auctionId, participants, user, passTurnToNextParticipant } = useSocket();
   return (
     <Fragment>
       <Table />
       {
-        user && user.role === "user" && participants.find(i => i.active && i.nameCompany === user.nameCompany) && (
+        user && auctionId && user.role === "user" && participants.find(i => i.active && i.nameCompany === user.nameCompany) && (
           <div className={style.buttonWrapper}>
             <button onClick={passTurnToNextParticipant}>Передать ход</button>
           </div>

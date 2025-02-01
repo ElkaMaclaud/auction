@@ -64,7 +64,7 @@ const Table: FC = () => {
                             <td>{val}</td>
                             {participants.map((participant, participantIndex) => (
                                 <td key={participantIndex}>
-                                    {key === "action" && participant.active && user?.nameCompany === participant.nameCompany ?
+                                    {auctionId && key === "action" && participant.active && user?.nameCompany === participant.nameCompany ?
                                         <label className={style.newBid}>
                                             <span>Введите новую цену и нажмите Enter</span>
                                             <input type="text" value={value}
