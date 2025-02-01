@@ -14,8 +14,8 @@ interface SocketContextProps {
   placeBid: (bid: number) => void;
   endAuction: () => void;
   passTurnToNextParticipant: () => void;
-  visibleModal: boolean,
-  setVisibleModal: Dispatch<React.SetStateAction<boolean>>;
+  visibleModal: string,
+  setVisibleModal: Dispatch<React.SetStateAction<string>>;
   addCompanyName: (list: string) => void;
   waitingConnection: boolean
 }
@@ -38,7 +38,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [participantsUrl, setParticipantsUrl] = useState<string[]>([]);
   const location = useLocation();
   const [user, setUser] = useState({ role: "", nameCompany: "" })
-  const [visibleModal, setVisibleModal] = useState(false)
+  const [visibleModal, setVisibleModal] = useState("")
   const [waitingConnection, setWaitingConnection] = useState(true)
 
   useEffect(() => {
@@ -68,16 +68,22 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     socket.on('auction started', (id, participants) => {
       socket.emit('join auction', id);
       setAuctionId(id);
-      setVisibleModal(true)
+      setVisibleModal("start")
     });
 
     socket.on('auction ended', () => {
       setAuctionId("");
-      setVisibleModal(true)
+      setVisibleModal("end")
+      setTimer(30)
     });
 
     socket.on("your turn", (data) => {
       setActionValue(data.participant.currentBid);
+      setVisibleModal("your turn")
+    });
+
+    socket.on("turn timeout", () => {
+      setVisibleModal("turn timeout")
     });
 
     socket.on("participantsUrl", (data) => {

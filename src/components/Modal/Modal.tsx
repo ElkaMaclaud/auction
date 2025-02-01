@@ -9,7 +9,8 @@ export const Modal: FC<{ children: ReactNode, style?: CSSProperties }> = ({ chil
     const node = document.querySelector("#react_modal");
 
     useEffect(() => {
-        setTimeout(() => setVisibleModal(false), 800)
+        let timeoutId = setTimeout(() => setVisibleModal(""), 800)
+        return (() => clearTimeout(timeoutId))
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 

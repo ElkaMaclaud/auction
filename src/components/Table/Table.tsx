@@ -29,10 +29,12 @@ const Table: FC = () => {
             placeBid && placeBid(parseInt(value))
         }
     };
+
     return (
-        <div className={style.auctionRoom}>
-            {visibleModal && auctionId.length > 0 && <Modal>Торги начались!</Modal> }
-            {visibleModal && auctionId.length === 0 && <Modal>Торги завершились!</Modal> }
+        <div className={style.auctionRoom}> 
+            {visibleModal === "start" && <Modal>Торги начались!</Modal> }
+            {visibleModal === "your turn" && participants.find(i=>i.active)?.nameCompany === user.nameCompany && <Modal>Ваш ход! У вас есть 30 секунд для ставки!</Modal>}
+            {visibleModal === "end" && <Modal>Торги завершились!</Modal> }
             {auctionId === "" ? <>
                 <h2>Скоро начнём торги</h2></>
                 : <><h2>Ход торгов: Тестовые торги на аппарат ЛОТОС №2033554
