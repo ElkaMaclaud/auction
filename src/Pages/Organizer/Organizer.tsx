@@ -22,8 +22,8 @@ const Organizer = () => {
   };
   return (
     <div className={style.organizerWrapper}>
-      {waitingConnection && <Modal style={styles}><h3 style={{ color: "#333", fontSize: "35px" }}>
-        Сервер очень медленный, потому что бесплатный и поэтому придется немного подождать :( ...</h3>
+      {waitingConnection && <Modal style={styles}><h3 style={{ color: "#9400d3", fontSize: "40px" }}>
+        Простите, что приходится так долго ждать...<br/><i>Glitch</i> порой бывает очень медленным, потому что я на бесплатном тарифе, и поэтому <i>glitch</i> не торопится :(</h3>
       </Modal>}
       <h1>Здесь вы можете начать и завершить торги</h1>
       <div className={style.organizer}>
